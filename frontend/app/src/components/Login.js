@@ -6,7 +6,8 @@ function Login() {
 
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
-    
+    const [error, setError] = React.useState("");
+    const [user, setUser] = React.useState(null);
     
 
     const handleLogin = async (e) => { 
@@ -14,39 +15,70 @@ function Login() {
 
         console.log(email, password);
 
-        const response = await axios.post('http://localhost:34265/login', 
-            JSON.stringify({email, password}),
-            {headers: {'Content-Type': 'application/json'}}
+
+
+        try{
+            const response = await axios.post('http://localhost:3000/login', 
+                JSON.stringify({email, password}),
+                {
+                    headers: {'Content-Type': 'application/json'}
+                }
             );
+
+            console.log(response.data);
+            setUser(response.data.user);
+
+        } catch (error) {
+            if (error.response) {
+                setError('Erro ao acessar o servidor');
+            } else if (error.response.status == 401) {
+                setError('Email ou senha incorretos');
+            }
+        }
      
+    }
+
+    const handleLogout = async (e) => {
+        e.preventDefault();
+        setUser(null);
+        setError("");
     }
 
 
     return (
-    <div className="login-form-wrap">
-      <h2>Login</h2>
-      <form className="login-form">
-        <input 
-            type="email" 
-            name="email" 
-            placeholder="Email" 
-            required
-            onChange={(e) => setEmail(e.target.value)}
-            />
-        <input 
-            type="password" 
-            name="password" 
-            placeholder="Password" 
-            required
-            onChange={(e) => setPassword(e.target.value)}
-            />
-        <button 
-            type="submit" 
-            className="btn-login" 
-            onClick={(e) => handleLogin(e)}
-            >Login</button>
-      </form>
-    </div>
+        <div className="login-form-wrap">
+            {user == null ? (
+            <div>
+            <h2>Login</h2>
+            <form className="login-form">
+                <input 
+                    type="email" 
+                    name="email" 
+                    placeholder="Email" 
+                    required
+                    onChange={(e) => setEmail(e.target.value)}
+                    />
+                <input 
+                    type="password" 
+                    name="password" 
+                    placeholder="Password" 
+                    required
+                    onChange={(e) => setPassword(e.target.value)}
+                    />
+                <button 
+                    type="submit" 
+                    className="btn-login" 
+                    onClick={(e) => handleLogin(e)}
+                    >Login</button>
+            </form>
+            <p>{error}</p>
+        </div>) : (
+            <div>
+                <h2>Seja bem vindo, {user.name}</h2>  
+                <button type='button' className='btn-login' onClick={(e) => handleLogout(e)}>Logout</button>     
+            </div>
+        )}
+        </div>
     );
-  }
+}
   export default Login;
